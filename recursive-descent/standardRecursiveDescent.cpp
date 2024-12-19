@@ -41,6 +41,7 @@ bool C(); // Function for non-terminal C.
 void S() {
 	// If the current symbol is 'a', we call A to handle the production 'a A'.
 	if (input[lookahead] == 'a') {
+		match('a');
 		A();
 	} 
 	// If the current symbol is 'b', we consume it as part of the production 'b'.
