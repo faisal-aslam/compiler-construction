@@ -10,6 +10,7 @@ int lookahead = 0;
 // Function to handle syntax errors.
 void error() {
 	cout << "syntax error" << endl;
+	//TODO this is not correct way of dealing with error. We should recover and continue. 
 	exit(1);
 }
 
@@ -34,18 +35,16 @@ C → c
 // Declare all functions corresponding to non-terminals.
 void S(); // Function for non-terminal S.
 void A(); // Function for non-terminal A.
-bool B(); // Function for non-terminal B.
-bool C(); // Function for non-terminal C.
+void B(); // Function for non-terminal B.
+void C(); // Function for non-terminal C.
 
 // Function for non-terminal S, which has two productions: a A or b.
 void S() {
-	// If the current symbol is 'a', we call A to handle the production 'a A'.
-	if (input[lookahead] == 'a') {
+	if (input[lookahead] == 'a') { // FIRST(aA)
 		match('a');
 		A();
 	} 
-	// If the current symbol is 'b', we consume it as part of the production 'b'.
-	else if (input[lookahead] == 'b') {
+	else if (input[lookahead] == 'b') { // FIRST (b)
 		match('b');
 	} 
 	// If neither condition is met, it's a syntax error.
@@ -56,22 +55,22 @@ void S() {
 
 // Function for non-terminal A, which has three possible productions: B A, C, or ε.
 void A() {
-	// If B returns true (matches 'b'), then we recursively call A (B A).
-	if (B()) {
-		A(); // Calls A again for the second production B A.
+	if (input[lookahead] == 'b') { //FIRST(BA)
+		B();
+		A(); 
 	} 
-	// If C doesn't return true (i.e., it's not 'c'), we consider it the epsilon case.
-	else if (!C()) {
+	else if (input[lookahead] == 'c') { //FIRST(C)
 		// Epsilon production, so we simply do nothing and return.
+	} else {
+		error();
 	}
 }
 
 // Function for non-terminal B, which matches the terminal 'b'.
-bool B() {
+void B() {
 	// If the current symbol is 'b', we consume it.
-	if (input[lookahead] == 'b') {
+	if (input[lookahead] == 'b') { //FIRST(b)
 		match('b');
-		return true;
 	}
 	// If it's not 'b', return false.
 	return false;
@@ -80,9 +79,8 @@ bool B() {
 // Function for non-terminal C, which matches the terminal 'c'.
 bool C() {
 	// If the current symbol is 'c', we consume it.
-	if (input[lookahead] == 'c') {
+	if (input[lookahead] == 'c') { //FIRST(C)
 		match('c');
-		return true;
 	}
 	// If it's not 'c', return false.
 	return false;
