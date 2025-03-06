@@ -60,7 +60,9 @@ void A() {
 		A(); 
 	} 
 	else if (input[lookahead] == 'c') { //FIRST(C)
-		// Epsilon production, so we simply do nothing and return.
+		C();
+	} else if(input[lookahead] == '$') { //FOLLOW(A)
+		//do nothing
 	} else {
 		error();
 	}
