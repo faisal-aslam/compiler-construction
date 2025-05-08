@@ -31,11 +31,11 @@ F → number                          F.val = number.lexval
 using namespace std;
 
 string input;
-int lookahead = 0;
-int current_value = 0;
+size_t lookahead = 0;  // Using size_t for string indexing
 
 void error() {
-    cout << "Syntax error at position " << lookahead << " (character '" << input[lookahead] << "')" << endl;
+    cerr << "Syntax error at position " << lookahead 
+         << " (character '" << input[lookahead] << "')" << endl;
     exit(1);
 }
 
@@ -62,19 +62,12 @@ int E() {
 
 // E' → + T E' | ε
 int E_prime(int inherited_val) {
-    if (input[lookahead] == '+') {
+    if (lookahead < input.size() && input[lookahead] == '+') {
         match('+');
         int t_val = T();
         return E_prime(inherited_val + t_val);
     }
-    // ε production - check FOLLOW(E')
-    else if (input[lookahead] == ')' || input[lookahead] == '$') {
-        return inherited_val;
-    }
-    else {
-        error();
-    }
-    return inherited_val; // This line is theoretically unreachable
+    return inherited_val; // ε production
 }
 
 // T → F T'
@@ -85,49 +78,53 @@ int T() {
 
 // T' → * F T' | ε
 int T_prime(int inherited_val) {
-    if (input[lookahead] == '*') {
+    if (lookahead < input.size() && input[lookahead] == '*') {
         match('*');
         int f_val = F();
         return T_prime(inherited_val * f_val);
     }
-    // ε production - check FOLLOW(T')
-    else if (input[lookahead] == '+' || input[lookahead] == ')' || input[lookahead] == '$') {
-        return inherited_val;
-    }
-    else {
-        error();
-    }
-    return inherited_val; // This line is theoretically unreachable
+    return inherited_val; // ε production
 }
 
 // F → ( E ) | number
 int F() {
-    int value;
+    if (lookahead >= input.size()) error();
+    
     if (input[lookahead] == '(') {
         match('(');
-        value = E();
+        int value = E();
         match(')');
+        return value;
     }
     else if (isdigit(input[lookahead])) {
-        value = input[lookahead] - '0';
-        match(input[lookahead]);
+        // Corrected number parsing - extract full integer before consuming
+        int value = 0;
+        while (lookahead < input.size() && isdigit(input[lookahead])) {
+            value = value * 10 + (input[lookahead] - '0');
+            lookahead++;
+        }
+        return value;
     }
     else {
         error();
     }
-    return value;
+    return 0; // unreachable
 }
 
 int main() {
     cout << "Enter an arithmetic expression (e.g., 2+3*4): ";
-    cin >> input;
+    getline(cin, input);
     input = input + '$'; // Append end marker
     
-    int result = E();
-    
-    if (input[lookahead] == '$') {
-        cout << "Parsing successful. Result: " << result << endl;
-    } else {
+    try {
+        int result = E();
+        
+        if (lookahead < input.size() && input[lookahead] == '$') {
+            cout << "Result: " << result << endl;
+        } else {
+            error();
+        }
+    } catch (...) {
         error();
     }
     
