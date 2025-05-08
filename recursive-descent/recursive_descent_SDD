@@ -1,3 +1,29 @@
+/*
+*
+Recursive Descent of the following SDD using FIRST and FOLLOW set
+Production                          Semantic Rules
+---------------------------------------------------------------------
+E → T E'                            E.val = E'.val
+                                    E'.inh = T.val
+
+E' → + T E'₁                        E'.val = E'₁.val
+                                    E'₁.inh = E'.inh + T.val
+
+E' → ε                              E'.val = E'.inh
+
+T → F T'                            T.val = T'.val
+                                    T'.inh = F.val
+
+T' → * F T'₁                        T'.val = T'₁.val
+                                    T'₁.inh = T'.inh * F.val
+
+T' → ε                              T'.val = T'.inh
+
+F → ( E )                           F.val = E.val
+
+F → number                          F.val = number.lexval
+*
+*/
 #include <iostream>
 #include <string>
 #include <cctype>
